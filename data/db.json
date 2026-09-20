@@ -1,6 +1,99 @@
 {
   "sites": [
     {
+      "id": "site-seed-4",
+      "cave": "北麓三号洞",
+      "zone": "流石坡区",
+      "pointCode": "L-05",
+      "route": "东线巡测",
+      "sensitivity": "高",
+      "protectedStatus": "暂停开放",
+      "baselineTemp": 17.6,
+      "baselineHumidity": 94,
+      "baselineCo2": 1100,
+      "note": "顶板裂隙扩展，CO2偏高，暂停开放待复查",
+      "createdAt": "2026-06-14T08:30:00.000Z",
+      "updatedAt": "2026-09-19T09:00:00.000Z",
+      "history": [
+        {
+          "at": "2026-06-14T08:30:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        },
+        {
+          "at": "2026-09-19T09:00:00.000Z",
+          "action": "暂停开放",
+          "note": "裂隙扩展，封样点"
+        }
+      ]
+    },
+    {
+      "id": "site-seed-5",
+      "cave": "南坡一号洞",
+      "zone": "竖井厅区",
+      "pointCode": "S-01",
+      "route": "竖井线",
+      "sensitivity": "高",
+      "protectedStatus": "重点保护",
+      "baselineTemp": 15.9,
+      "baselineHumidity": 95,
+      "baselineCo2": 720,
+      "note": "竖井下方大厅，需绳索",
+      "createdAt": "2026-06-14T08:40:00.000Z",
+      "updatedAt": "2026-06-14T08:40:00.000Z",
+      "history": [
+        {
+          "at": "2026-06-14T08:40:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
+      ]
+    },
+    {
+      "id": "site-seed-3",
+      "cave": "北麓三号洞",
+      "zone": "流石坡区",
+      "pointCode": "L-02",
+      "route": "东线巡测",
+      "sensitivity": "中",
+      "protectedStatus": "常规观察",
+      "baselineTemp": 17.1,
+      "baselineHumidity": 89,
+      "baselineCo2": 700,
+      "note": "坡顶流石坝，台阶湿滑",
+      "createdAt": "2026-06-14T08:20:00.000Z",
+      "updatedAt": "2026-06-14T08:20:00.000Z",
+      "history": [
+        {
+          "at": "2026-06-14T08:20:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
+      ]
+    },
+    {
+      "id": "site-seed-2",
+      "cave": "北麓三号洞",
+      "zone": "滴水帘区",
+      "pointCode": "D-09",
+      "route": "西线巡测",
+      "sensitivity": "中",
+      "protectedStatus": "常规观察",
+      "baselineTemp": 16.8,
+      "baselineHumidity": 90,
+      "baselineCo2": 640,
+      "note": "滴水帘中段，石笋群",
+      "createdAt": "2026-06-14T08:10:00.000Z",
+      "updatedAt": "2026-06-14T08:10:00.000Z",
+      "history": [
+        {
+          "at": "2026-06-14T08:10:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
+      ]
+    },
+    {
       "id": "site-seed-1",
       "cave": "北麓三号洞",
       "zone": "滴水帘区",
@@ -15,11 +108,61 @@
       "createdAt": "2026-06-14T08:00:00.000Z",
       "updatedAt": "2026-06-14T08:00:00.000Z",
       "history": [
-        { "at": "2026-06-14T08:00:00.000Z", "action": "创建", "note": "样点建档" }
+        {
+          "at": "2026-06-14T08:00:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
       ]
     }
   ],
   "surveys": [
+    {
+      "id": "survey-seed-2",
+      "siteId": "site-seed-2",
+      "surveyor": "周岭",
+      "date": "2026-09-20",
+      "temperature": 16.7,
+      "humidity": 91,
+      "co2": 655,
+      "dripRate": 11,
+      "disturbance": "",
+      "photoUrl": "",
+      "status": "正常",
+      "reviewNote": "",
+      "createdAt": "2026-09-20T01:20:00.000Z",
+      "updatedAt": "2026-09-20T01:20:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-20T01:20:00.000Z",
+          "action": "创建",
+          "note": "当日登记完成，可带组进洞"
+        }
+      ]
+    },
+    {
+      "id": "survey-seed-3",
+      "siteId": "site-seed-5",
+      "surveyor": "韩冰",
+      "date": "2026-09-19",
+      "temperature": 16,
+      "humidity": 94,
+      "co2": 730,
+      "dripRate": 6,
+      "disturbance": "",
+      "photoUrl": "",
+      "status": "正常",
+      "reviewNote": "",
+      "createdAt": "2026-09-19T02:10:00.000Z",
+      "updatedAt": "2026-09-19T02:10:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-19T02:10:00.000Z",
+          "action": "创建",
+          "note": "昨日登记"
+        }
+      ]
+    },
     {
       "id": "survey-seed-1",
       "siteId": "site-seed-1",
@@ -36,8 +179,14 @@
       "createdAt": "2026-06-18T10:00:00.000Z",
       "updatedAt": "2026-06-18T10:00:00.000Z",
       "history": [
-        { "at": "2026-06-18T10:00:00.000Z", "action": "创建", "note": "CO2升高并有干扰痕迹" }
+        {
+          "at": "2026-06-18T10:00:00.000Z",
+          "action": "创建",
+          "note": "CO2升高并有干扰痕迹"
+        }
       ]
     }
-  ]
+  ],
+  "permits": [],
+  "todos": []
 }

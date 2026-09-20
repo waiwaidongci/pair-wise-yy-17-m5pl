@@ -309,6 +309,226 @@ main {
   border-radius: 8px;
 }
 
+/* ---- 进洞调度看板 ---- */
+
+.permit-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.todo-grid {
+  grid-template-columns: minmax(300px, 420px) 1fr;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 4px 0;
+}
+
+.field-label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.permit-alert {
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.permit-alert.bad {
+  background: rgba(161, 61, 61, .1);
+  border-color: rgba(161, 61, 61, .4);
+  color: var(--bad);
+}
+
+.permit-alert.ok {
+  background: rgba(38, 115, 77, .1);
+  border-color: rgba(38, 115, 77, .4);
+  color: var(--ok);
+}
+
+.route-box {
+  display: grid;
+  gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  background: #fff;
+}
+
+.route-group-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.route-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7f3eb;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-weight: 400;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.route-item input {
+  width: auto;
+}
+
+.route-item em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 12px;
+}
+
+.route-item.closed {
+  background: rgba(161, 61, 61, .07);
+}
+
+.occupy-row {
+  padding: 8px 0;
+  border-top: 1px dashed var(--line);
+}
+
+.occupy-row:first-child {
+  border-top: 0;
+}
+
+.card-overdue {
+  border-color: rgba(161, 61, 61, .55);
+  box-shadow: 0 0 0 1px rgba(161, 61, 61, .25), var(--shadow);
+}
+
+.card-bad {
+  border-color: rgba(161, 61, 61, .4);
+}
+
+.warn-line {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(163, 92, 0, .12);
+  color: var(--warn);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.exit-report {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f7f3eb;
+  display: grid;
+  gap: 4px;
+}
+
+.subform {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fcfaf5;
+}
+
+.subform h4 {
+  margin: 0 0 10px;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.checkline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+  color: var(--ink);
+  font-size: 13px;
+  background: #f7f3eb;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.checkline input {
+  width: auto;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 10px;
+}
+
+.inline-form .actions {
+  margin: 0;
+}
+
+.jumplink {
+  align-self: center;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 10px 4px;
+}
+
+.jumplink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid,
+  .permit-grid,
+  .todo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .toast {
   position: fixed;
   right: 20px;

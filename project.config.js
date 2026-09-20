@@ -6,19 +6,28 @@ module.exports = {
     '常规观察': 'ok',
     '正常': 'ok',
     '已复查': 'ok',
+    '已许可': 'ok',
+    '已释放': 'ok',
+    '待处理': 'warn',
     '重点保护': 'warn',
     '异常待复查': 'bad',
-    '暂停开放': 'bad'
+    '暂停开放': 'bad',
+    '待搜索': 'bad',
+    '逾期未出': 'bad'
   },
   collections: {
     sites: { label: '样点档案' },
-    surveys: { label: '巡测记录' }
+    surveys: { label: '巡测记录' },
+    permits: { label: '进洞许可' },
+    todos: { label: '搜索待办' }
   },
   stats: [
     { label: '样点', collection: 'sites' },
-    { label: '重点保护', collection: 'sites', filter: { field: 'protectedStatus', value: '重点保护' } },
+    { label: '暂停开放样点', collection: 'sites', filter: { field: 'protectedStatus', value: '暂停开放' } },
     { label: '巡测记录', collection: 'surveys' },
-    { label: '待复查', collection: 'surveys', filter: { field: 'status', value: '异常待复查' } }
+    { label: '待复查', collection: 'surveys', filter: { field: 'status', value: '异常待复查' } },
+    { label: '分区占用中', collection: 'permits', filter: { field: 'status', op: 'neq', value: '已释放' } },
+    { label: '搜索待办', collection: 'todos', filter: { field: 'status', value: '待处理' } }
   ],
   views: [
     {
@@ -27,6 +36,11 @@ module.exports = {
       type: 'dashboard',
       focusTitle: '异常与复查',
       focus: { collection: 'surveys', field: 'status', values: ['异常待复查'], limit: 8 }
+    },
+    {
+      id: 'permits',
+      label: '进洞调度',
+      type: 'permit-board'
     },
     {
       id: 'sites',

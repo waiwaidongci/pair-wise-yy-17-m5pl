@@ -119,12 +119,21 @@ function setTab(tabId) {
   state.activeTab = tabId;
   $$('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === tabId));
   $$('.view').forEach((view) => view.classList.toggle('active', view.id === tabId));
+  if (tabId === 'permits' && window.PermitBoard && boardHydrated) {
+    window.PermitBoard.refreshSilently();
+  }
 }
 
 function renderStats() {
   return `<div class="stats">${state.config.stats.map((stat) => {
     const items = state.db[stat.collection] || [];
-    const value = stat.filter ? items.filter((item) => item[stat.filter.field] === stat.filter.value).length : items.length;
+    let value;
+    if (stat.filter) {
+      const { field, value: target, op } = stat.filter;
+      value = items.filter((item) => op === 'neq' ? item[field] !== target : item[field] === target).length;
+    } else {
+      value = items.length;
+    }
     return `<div class="stat"><span>${escapeHtml(stat.label)}</span><strong>${value}</strong></div>`;
   }).join('')}</div>`;
 }
@@ -203,17 +212,29 @@ function renderCrudView(view) {
   </section>`;
 }
 
+function renderView(view) {
+  if (view.type === 'permit-board') return window.PermitBoard.renderShell();
+  if (view.type === 'dashboard') return renderDashboardView(view);
+  return renderCrudView(view);
+}
+
 function render() {
   $('#title').textContent = state.config.title;
   document.title = state.config.title;
   $('#lede').textContent = state.config.lede;
-  $('#main').innerHTML = state.config.views.map((view) => view.type === 'dashboard' ? renderDashboardView(view) : renderCrudView(view)).join('');
+  $('#main').innerHTML = state.config.views.map(renderView).join('');
   setTab(state.activeTab || state.config.views[0].id);
 }
+
+let boardHydrated = false;
 
 async function load() {
   state.db = await api('/api/db');
   render();
+  if (!boardHydrated && window.PermitBoard) {
+    boardHydrated = true;
+    await window.PermitBoard.hydrate(toast);
+  }
 }
 
 document.addEventListener('click', async (event) => {
@@ -251,6 +272,7 @@ $('#refreshBtn').addEventListener('click', () => load().then(() => toast('已刷
 
 async function boot() {
   state.config = await api('/api/config');
+  window.appConfig = state.config;
   renderTabs();
   await load();
 }

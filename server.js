@@ -1,103 +1,220 @@
 const express = require('express');
-const fs = require('fs/promises');
 const path = require('path');
 
-const app = express();
 const config = require('./project.config');
+const store = require('./lib/store');
+const rules = require('./lib/permit-rules');
+
+const app = express();
 const PORT = process.env.PORT || config.port || 3900;
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-async function readDb() {
-  const raw = await fs.readFile(DB_FILE, 'utf8');
-  return JSON.parse(raw);
-}
-
-async function writeDb(db) {
-  await fs.writeFile(DB_FILE, JSON.stringify(db, null, 2) + '\n');
-}
-
 function stamp(action, note) {
-  return {
-    at: new Date().toISOString(),
-    action,
-    note: note || ''
-  };
+  return { at: new Date().toISOString(), action, note: note || '' };
 }
 
 function sortNewest(a, b) {
   return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
 }
 
+function ctx() {
+  return {
+    now: new Date(),
+    nextId(collection) {
+      return `${collection.replace(/s$/, '')}-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`;
+    }
+  };
+}
+
 app.get('/api/config', (req, res) => {
   res.json(config);
 });
 
-app.get('/api/db', async (req, res) => {
-  const db = await readDb();
-  for (const key of Object.keys(db)) {
-    if (Array.isArray(db[key])) db[key].sort(sortNewest);
+app.get('/api/db', async (req, res, next) => {
+  try {
+    const db = await store.readDb();
+    for (const key of Object.keys(db)) {
+      if (Array.isArray(db[key])) db[key].sort(sortNewest);
+    }
+    res.json(db);
+  } catch (error) {
+    next(error);
   }
-  res.json(db);
 });
 
-app.post('/api/:collection', async (req, res) => {
-  const db = await readDb();
-  const { collection } = req.params;
-  if (!Array.isArray(db[collection])) return res.status(404).json({ error: 'unknown collection' });
-  const now = new Date().toISOString();
-  const item = {
-    id: `${collection}-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
-    ...req.body,
-    createdAt: now,
-    updatedAt: now,
-    history: [stamp('创建', req.body.note || req.body.memo || '')]
-  };
-  db[collection].push(item);
-  await writeDb(db);
-  res.status(201).json(item);
-});
-
-app.patch('/api/:collection/:id', async (req, res) => {
-  const db = await readDb();
-  const { collection, id } = req.params;
-  if (!Array.isArray(db[collection])) return res.status(404).json({ error: 'unknown collection' });
-  const item = db[collection].find((entry) => entry.id === id);
-  if (!item) return res.status(404).json({ error: 'not found' });
-  const historyAction = req.body.historyAction;
-  delete req.body.historyAction;
-  Object.assign(item, req.body, { updatedAt: new Date().toISOString() });
-  item.history = item.history || [];
-  if (historyAction || req.body.note || req.body.memo || req.body.status) {
-    item.history.unshift(stamp(historyAction || req.body.status || '更新', req.body.note || req.body.memo || ''));
+// 进洞调度看板：许可规则的所有派生状态（占用、逾期、待办）都在这里现算，页面不存业务状态。
+app.get('/api/board/permits', async (req, res, next) => {
+  try {
+    const db = await store.readDb();
+    res.json(rules.buildBoard(db, new Date()));
+  } catch (error) {
+    next(error);
   }
-  await writeDb(db);
-  res.json(item);
 });
 
-app.delete('/api/:collection/:id', async (req, res) => {
-  const db = await readDb();
-  const { collection, id } = req.params;
-  if (!Array.isArray(db[collection])) return res.status(404).json({ error: 'unknown collection' });
-  const before = db[collection].length;
-  db[collection] = db[collection].filter((entry) => entry.id !== id);
-  if (db[collection].length === before) return res.status(404).json({ error: 'not found' });
-  await writeDb(db);
-  res.status(204).end();
+// ---- 进洞许可闭环（领域动作，规则全部来自 lib/permit-rules） ----
+
+app.post('/api/permits/request', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) => rules.requestPermit(db, req.body || {}, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.status(result.reused ? 200 : 201).json({ item: result.item, reused: Boolean(result.reused) });
+  } catch (error) {
+    next(error);
+  }
 });
 
-app.post('/api/action/:actionId/:id', async (req, res) => {
-  const db = await readDb();
-  const action = config.actions.find((entry) => entry.id === req.params.actionId);
-  if (!action) return res.status(404).json({ error: 'unknown action' });
-  const item = db[action.collection]?.find((entry) => entry.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'not found' });
-  const result = runAction(db, action, item);
-  if (result.error) return res.status(409).json({ error: result.error });
-  await writeDb(db);
-  res.json(result.item);
+app.post('/api/permits/:id/extend', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) =>
+      rules.requestExtension(db, req.params.id, req.body?.plannedEnd, req.body?.reason, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json({ item: result.item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/permits/:id/extend-confirm', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) => rules.confirmExtension(db, req.params.id, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json({ item: result.item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/permits/:id/extend-cancel', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) => rules.cancelExtension(db, req.params.id, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json({ item: result.item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/permits/:id/exit', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) =>
+      rules.exitCheck(db, req.body || {}, { ...ctx(), permitId: req.params.id }));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.status(201).json({ item: result.item, releaseEligible: result.releaseEligible, todo: result.todo || null });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/permits/:id/release', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) => rules.releasePermit(db, req.params.id, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json({ item: result.item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/todos/:id/resolve', async (req, res, next) => {
+  try {
+    const result = await store.mutate((db) => rules.resolveTodo(db, req.params.id, req.body?.resolution, ctx()));
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json({ item: result.item });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ---- 通用集合接口：仅开放档案与巡测记录，许可与待办必须走领域动作 ----
+
+const GENERIC_COLLECTIONS = ['sites', 'surveys'];
+
+app.post('/api/:collection', async (req, res, next) => {
+  try {
+    const { collection } = req.params;
+    if (!GENERIC_COLLECTIONS.includes(collection)) {
+      return res.status(403).json({ error: `${collection} 只能通过进洞调度的专用操作变更` });
+    }
+    const item = await store.mutate((db) => {
+      const now = new Date().toISOString();
+      const created = {
+        id: `${collection.replace(/s$/, '')}-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+        ...req.body,
+        createdAt: now,
+        updatedAt: now,
+        history: [stamp('创建', req.body.note || req.body.memo || '')]
+      };
+      db[collection].push(created);
+      return created;
+    });
+    res.status(201).json(item);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch('/api/:collection/:id', async (req, res, next) => {
+  try {
+    const { collection, id } = req.params;
+    if (!GENERIC_COLLECTIONS.includes(collection)) {
+      return res.status(403).json({ error: `${collection} 只能通过进洞调度的专用操作变更` });
+    }
+    const item = await store.mutate((db) => {
+      const target = db[collection].find((entry) => entry.id === id);
+      if (!target) return null;
+      const historyAction = req.body.historyAction;
+      const patch = { ...req.body };
+      delete patch.historyAction;
+      Object.assign(target, patch, { updatedAt: new Date().toISOString() });
+      target.history = target.history || [];
+      if (historyAction || patch.note || patch.memo || patch.status) {
+        target.history.unshift(stamp(historyAction || patch.status || '更新', patch.note || patch.memo || ''));
+      }
+      return target;
+    });
+    if (!item) return res.status(404).json({ error: 'not found' });
+    res.json(item);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete('/api/:collection/:id', async (req, res, next) => {
+  try {
+    const { collection, id } = req.params;
+    if (!GENERIC_COLLECTIONS.includes(collection)) {
+      return res.status(403).json({ error: `${collection} 只能通过进洞调度的专用操作变更` });
+    }
+    const removed = await store.mutate((db) => {
+      const before = db[collection].length;
+      db[collection] = db[collection].filter((entry) => entry.id !== id);
+      return db[collection].length !== before;
+    });
+    if (!removed) return res.status(404).json({ error: 'not found' });
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/api/action/:actionId/:id', async (req, res, next) => {
+  try {
+    const action = config.actions.find((entry) => entry.id === req.params.actionId);
+    if (!action) return res.status(404).json({ error: 'unknown action' });
+    const result = await store.mutate((db) => {
+      const item = db[action.collection]?.find((entry) => entry.id === req.params.id);
+      if (!item) return { missing: true };
+      return runAction(db, action, item);
+    });
+    if (result.missing) return res.status(404).json({ error: 'not found' });
+    if (result.error) return res.status(409).json({ error: result.error });
+    res.json(result.item);
+  } catch (error) {
+    next(error);
+  }
 });
 
 function getValue(source, pathName) {
@@ -157,6 +274,11 @@ function runAction(db, action, item) {
   }
   return { item };
 }
+
+app.use((error, req, res, next) => {
+  console.error(error);
+  res.status(500).json({ error: '服务端处理失败' });
+});
 
 app.listen(PORT, () => {
   console.log(`${config.title} running at http://localhost:${PORT}`);
