@@ -1,22 +1,34 @@
 module.exports = {
   port: 3912,
   title: '钟乳石洞穴微环境巡测',
-  lede: '围绕洞穴、分区、样点和巡测路线记录微环境数据，发现异常后生成复查闭环。',
+  lede: '围绕洞穴、分区、样点和巡测路线记录微环境数据；进洞许可与出洞释放按分区时段闭环管理，缺员或装备异常只落搜索待办、不释放额度。',
   tones: {
     '常规观察': 'ok',
     '正常': 'ok',
     '已复查': 'ok',
+    '已许可': 'ok',
+    '已出洞': 'ok',
+    '已处理': 'ok',
     '重点保护': 'warn',
     '异常待复查': 'bad',
-    '暂停开放': 'bad'
+    '暂停开放': 'bad',
+    '进洞中': 'warn',
+    '待确认延期': 'warn',
+    '逾期': 'bad',
+    '待处理': 'bad'
   },
   collections: {
     sites: { label: '样点档案' },
-    surveys: { label: '巡测记录' }
+    surveys: { label: '巡测记录' },
+    permits: { label: '进洞许可' },
+    todos: { label: '搜索待办' }
   },
   stats: [
     { label: '样点', collection: 'sites' },
     { label: '重点保护', collection: 'sites', filter: { field: 'protectedStatus', value: '重点保护' } },
+    { label: '在洞班组', collection: 'permits', filter: { field: 'status', value: ['已许可', '进洞中', '待确认延期', '逾期'] } },
+    { label: '逾期许可', collection: 'permits', filter: { field: 'status', value: '逾期' } },
+    { label: '搜索待办', collection: 'todos', filter: { field: 'status', value: '待处理' } },
     { label: '巡测记录', collection: 'surveys' },
     { label: '待复查', collection: 'surveys', filter: { field: 'status', value: '异常待复查' } }
   ],
@@ -25,8 +37,8 @@ module.exports = {
       id: 'dashboard',
       label: '趋势看板',
       type: 'dashboard',
-      focusTitle: '异常与复查',
-      focus: { collection: 'surveys', field: 'status', values: ['异常待复查'], limit: 8 }
+      focusTitle: '逾期与搜索待办',
+      focus: { collection: 'todos', kind: 'todos', limit: 8 }
     },
     {
       id: 'sites',
@@ -89,6 +101,36 @@ module.exports = {
         { label: '滴水频率', name: 'dripRate', type: 'number', required: true },
         { label: '照片链接', name: 'photoUrl' },
         { label: '游客干扰痕迹', name: 'disturbance', type: 'textarea', wide: true }
+      ]
+    },
+    {
+      id: 'permits',
+      label: '进洞许可',
+      type: 'permits',
+      collection: 'permits',
+      formTitle: '进洞申请',
+      submitLabel: '申请许可',
+      listTitle: '许可履历',
+      applyFields: [
+        { label: '班组名称', name: 'team', required: true, placeholder: '如：补班组甲' },
+        { label: '领队', name: 'leader', type: 'datalist', source: 'leaders', required: true, placeholder: '需已完成当日巡测登记' },
+        { label: '进洞分区', name: 'zone', type: 'datalist', source: 'zones', required: true },
+        { label: '巡测路线', name: 'route', type: 'datalist', source: 'routes', required: true, placeholder: '含暂停开放样点的路线将被拒绝' },
+        { label: '计划进洞时间', name: 'planEnterAt', type: 'datetime-local', required: true },
+        { label: '预计出洞时间', name: 'expectedExitAt', type: 'datetime-local', required: true },
+        { label: '进洞人员名单（每行一人，含领队）', name: 'memberNames', type: 'textarea', required: true, wide: true }
+      ],
+      exitFields: [
+        { label: '实际出洞人员（每行一人）', name: 'actualMembers', type: 'textarea', required: true, wide: true },
+        { label: '实际路线', name: 'actualRoute', type: 'datalist', source: 'routes', required: true, wide: true },
+        {
+          label: '装备是否异常',
+          name: 'equipmentAbnormal',
+          type: 'select',
+          options: [{ value: false, label: '正常' }, { value: true, label: '有异常' }],
+          wide: true
+        },
+        { label: '异常装备说明（型号 / 位置 / 现象）', name: 'equipmentNote', type: 'textarea', wide: true }
       ]
     }
   ],

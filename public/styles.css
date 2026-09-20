@@ -309,6 +309,79 @@ main {
   border-radius: 8px;
 }
 
+.occupancy-panel {
+  margin-bottom: 18px;
+}
+
+.occupancy {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.occ-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.occ-item.overdue {
+  border-left-color: var(--bad);
+  background: rgba(161, 61, 61, .06);
+}
+
+.occ-item span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.permits-grid {
+  grid-template-columns: minmax(300px, 400px) 1fr;
+}
+
+.todo-panel {
+  margin-top: 18px;
+}
+
+.todo-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.todo-open {
+  border-color: rgba(161, 61, 61, .45);
+}
+
+.card-overdue {
+  border-color: rgba(161, 61, 61, .55);
+  box-shadow: 0 0 0 1px rgba(161, 61, 61, .25);
+}
+
+.warn-note {
+  color: var(--bad);
+  font-weight: 700;
+  margin: 8px 0 0;
+}
+
+.exit-panel,
+.extend-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f7f3eb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.exit-panel h4,
+.extend-panel h4 {
+  margin: 0 0 10px;
+}
+
 .toast {
   position: fixed;
   right: 20px;

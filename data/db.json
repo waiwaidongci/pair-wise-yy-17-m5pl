@@ -15,7 +15,60 @@
       "createdAt": "2026-06-14T08:00:00.000Z",
       "updatedAt": "2026-06-14T08:00:00.000Z",
       "history": [
-        { "at": "2026-06-14T08:00:00.000Z", "action": "创建", "note": "样点建档" }
+        {
+          "at": "2026-06-14T08:00:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
+      ]
+    },
+    {
+      "id": "site-seed-2",
+      "cave": "北麓三号洞",
+      "zone": "滴水帘区",
+      "pointCode": "D-09",
+      "route": "西线巡测",
+      "sensitivity": "中",
+      "protectedStatus": "暂停开放",
+      "baselineTemp": 16.8,
+      "baselineHumidity": 90,
+      "baselineCo2": 710,
+      "note": "顶板落石风险，暂停开放",
+      "createdAt": "2026-08-02T08:00:00.000Z",
+      "updatedAt": "2026-09-10T08:00:00.000Z",
+      "history": [
+        {
+          "at": "2026-08-02T08:00:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        },
+        {
+          "at": "2026-09-10T08:00:00.000Z",
+          "action": "暂停开放",
+          "note": "顶板落石风险"
+        }
+      ]
+    },
+    {
+      "id": "site-seed-3",
+      "cave": "北麓三号洞",
+      "zone": "石笋林区",
+      "pointCode": "S-02",
+      "route": "东线巡测",
+      "sensitivity": "中",
+      "protectedStatus": "常规观察",
+      "baselineTemp": 15.9,
+      "baselineHumidity": 93,
+      "baselineCo2": 650,
+      "note": "石笋发育稳定",
+      "createdAt": "2026-07-20T08:00:00.000Z",
+      "updatedAt": "2026-07-20T08:00:00.000Z",
+      "history": [
+        {
+          "at": "2026-07-20T08:00:00.000Z",
+          "action": "创建",
+          "note": "样点建档"
+        }
       ]
     }
   ],
@@ -36,8 +89,37 @@
       "createdAt": "2026-06-18T10:00:00.000Z",
       "updatedAt": "2026-06-18T10:00:00.000Z",
       "history": [
-        { "at": "2026-06-18T10:00:00.000Z", "action": "创建", "note": "CO2升高并有干扰痕迹" }
+        {
+          "at": "2026-06-18T10:00:00.000Z",
+          "action": "创建",
+          "note": "CO2升高并有干扰痕迹"
+        }
+      ]
+    },
+    {
+      "id": "survey-seed-2",
+      "siteId": "site-seed-3",
+      "surveyor": "沈宁",
+      "date": "2026-09-20",
+      "temperature": 16.1,
+      "humidity": 92,
+      "co2": 660,
+      "dripRate": 9,
+      "disturbance": "",
+      "photoUrl": "",
+      "status": "正常",
+      "reviewNote": "",
+      "createdAt": "2026-09-20T07:40:00.000Z",
+      "updatedAt": "2026-09-20T07:40:00.000Z",
+      "history": [
+        {
+          "at": "2026-09-20T07:40:00.000Z",
+          "action": "创建",
+          "note": "领队当日登记，满足进洞申请前提"
+        }
       ]
     }
-  ]
+  ],
+  "permits": [],
+  "todos": []
 }
